@@ -12,5 +12,10 @@ def main():
 
     print(f"--- Begin report of {f.name} ---") #Extracting name of novel from file object.
 
+
+
+
+
+
 if __name__ == "__main__": # If this script is being run directly (not imported), execute the main function.
     main()
