@@ -11,9 +11,10 @@ def main():
     num_words = get_nums_words(file_contents) #Passing file_contents to get num words and storing inside num words.
 
     print(f"--- Begin report of {f.name} ---") #Extracting name of novel from file object.
+    print(f"{num_words} words are found in the document")
+    input("\nPress 'Enter' to view the character count:\n") #Prompt user to get direct character count
 
-
-
+    lowered_string = file.contents.lower() #Convert to lowercase
 
 
 
