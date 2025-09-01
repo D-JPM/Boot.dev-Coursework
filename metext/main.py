@@ -39,7 +39,28 @@ class App(tk.Tk):   # App inherits tk
         self._update_title()
 
     def _action_open(self):
-        pass
+        # Ask user to pick a file: empty string if cancelled
+        path = filedialog.askopenfilename(
+            title="Open file",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        if not path:
+            return # Cancelled
+        try:
+            # Open the selected file for reading as text (UTF-8) and ensure it closes automatically
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()                                              # Read entire file into a string
+        except Exception as e:
+            # If anything goes wrong (missing file etc..), show an error dialog
+            messagebox.showerror("Open Error", str(e))
+            return                                                              # Abort the open action on error
+
+        self.text.delete("1.0", "end")                                          # Remove all text from line 1, char 0 to the end
+        self.text.insert("1.0", content)                                        # Insert loaded file content at the very start
+        self.text.mark_set("insert", "1.0")                                     # Move the text cursor to start
+        self.text.see("insert")                                                 # Scroll view so the cursor postiion is visible
+        self.current_path = path                                                # Remember which file is currently open    
+        self._update_title()                                                    # Refresh window title to show file name/path
 
     def _action_save(self):
         pass
@@ -57,4 +78,3 @@ class App(tk.Tk):   # App inherits tk
 if __name__ == "__main__":      # run only when executed directly, not when imported
     app = App()                 # Create the app window
     app.mainloop()              # Start Tk's event loop 
-
