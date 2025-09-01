@@ -28,8 +28,15 @@ class App(tk.Tk):   # App inherits tk
 
         self.text.pack(fill="both", expand=True)                                # Lay out the text widget to fill available space
 
+    def _update_title(self):
+        name = self.current_path if self.current_path else "None Loaded"
+        self.title(f"metext - {name}")
+    
     def _action_new(self):
-        pass
+        # Clear the text area and reset file state
+        self.text.delete("1.0", "end")
+        self.current_path = None
+        self._update_title()
 
     def _action_open(self):
         pass
@@ -41,7 +48,11 @@ class App(tk.Tk):   # App inherits tk
         pass
 
     def _bind_keys(self):
-        pass    # Create shortcuts
+        self.bind("<Control-n>", lambda e: self._action_new())                  # Bind Ctrl+N "New"
+        self.bind("<Control-o>", lambda e: self._action_open())                 # Bind Ctrl+N "Open"
+        self.bind("<Control-s>", lambda e: self._action_save())                 # Bind Ctrl+N "Save"
+        self.bind("<Control-S>", lambda e: self._action_save_as())              # Bind Ctrl+N "Save As"             
+
 
 if __name__ == "__main__":      # run only when executed directly, not when imported
     app = App()                 # Create the app window
