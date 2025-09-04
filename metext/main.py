@@ -63,10 +63,39 @@ class App(tk.Tk):   # App inherits tk
         self._update_title()                                                    # Refresh window title to show file name/path
 
     def _action_save(self):
-        pass
+        # If no file path yet, delegate to "Save As"
+        if self.current_path is None:
+            return self._action_save_as()
+        
+        try:                                                                    
+            content = self.text.get("1.0", "end-1c")                            # Get all text from the editor, excluding the trailing newline Tk adds
+            with open(self.current_path, "w", encoding="utf-8") as f:           # Open the current file for writing (UTF-8) and ensure it closes
+                f.write(content)                                                # Write editor content to disk
+        except Exception as e:                                                                  
+            messagebox.showerror("Save Error", str(e))                          # Show and error dialog if saving fails (permissions, disk, etc...)                    
+            return
+        
+        self._update_title()                                                    # Refresh the window title (e.g. clear modified marker later)
 
     def _action_save_as(self):
-        pass
+        path = filedialog.asksaveasfilename(                                    # Ask the user for a traget path; empty string if they cancel
+            title="Save As",
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        if not path:
+            return                                                              # User Cancelled
+        
+        try:
+            content = self.text.get("1.0", "end-1c")                            # Get editor content (without trailing newline)
+            with open(path, "w", encoding="utf-8") as f:                        # Write content to the chosen path
+                f.write(content)
+        except Exception as e:
+            messagebox.showerror("Save As Error", str(e))                       # Show an error dialog if writing fails
+            return
+        # Update current file path and refresh title
+        self.current_path = path
+        self._update_title()
 
     def _bind_keys(self):
         self.bind("<Control-n>", lambda e: self._action_new())                  # Bind Ctrl+N "New"
