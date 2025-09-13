@@ -7,8 +7,12 @@ class App(tk.Tk):   # App inherits tk
         self.title("metext")            # Set window title
         self.geometry("900x600")        # Set window size (Width x Height)
         self.current_path = None        # Track the current file path
+        self.modified = False           # Does the buffer have unsaved changes
         self._build_ui()                # Construct layout & widgets
         self._bind_keys()               # Register keyboard shortcuts
+        self.text.bind("<<Modified>>", self._on_text_modified) # When text is modified, call handler
+        self.text.edit_modified(False)  # Reset Tkinters inetnal modified flag to "clean"
+        self._update_title()            # Set initial window title (reflecting current state)
 
     def _build_ui(self):
         menubar = tk.Menu(self)                                                 # Menubar container 
@@ -31,14 +35,29 @@ class App(tk.Tk):   # App inherits tk
     def _update_title(self):
         name = self.current_path if self.current_path else "None Loaded"
         self.title(f"metext - {name}")
+
+    def _on_text_modified(self, event=None):
+        if self.text.edit_modified():           # Check Tkinters internal "modified" state
+            self.modified = True                # mark app-level flag as dirty.unsaved
+            self.text.edit_modified(False)      # immediatley clear Tk's flag (we get future events)
+            self._update_title()                # Refresh title to show the asterisk
+
+    def _update_title(self):
+        name = self.current_path if self.current_path else "Untitled"   # Show filename or placeholder
+        star = " *" if self.modified else ""                            # Show "*" when unsaved
+        self.title(f"metext - {name}{star}")                            # Supply the composed title
     
     def _action_new(self):
+        if not self._maybe_confirm_discard():   # If User cancels stop this action
+            return
         # Clear the text area and reset file state
         self.text.delete("1.0", "end")
         self.current_path = None
         self._update_title()
 
     def _action_open(self):
+        if not self._maybe_confirm_discard():   # If User cancels stop this action
+            return
         # Ask user to pick a file: empty string if cancelled
         path = filedialog.askopenfilename(
             title="Open file",
@@ -61,6 +80,12 @@ class App(tk.Tk):   # App inherits tk
         self.text.see("insert")                                                 # Scroll view so the cursor postiion is visible
         self.current_path = path                                                # Remember which file is currently open    
         self._update_title()                                                    # Refresh window title to show file name/path
+
+    def _maybe_confirm_discard(self):
+        if not self.modified:                                                       # If there are no unsaved changes
+            return True                                                             # Proceed without asking
+        # Ask the user if changes can be discared; True = proceed, False = cancel
+        return messagebox.askyesno("Unsaved changes", "Discard unsaved changes?")   
 
     def _action_save(self):
         # If no file path yet, delegate to "Save As"
