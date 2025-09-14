@@ -9,6 +9,7 @@ class App(tk.Tk):   # App inherits tk
         self.current_path = None        # Track the current file path
         self.modified = False           # Does the buffer have unsaved changes
         self._build_ui()                # Construct layout & widgets
+        self.protocol("WM_DELETE_WINDOW", self._on_close) # When the window close button is clicked, call _on_close handler
         self._bind_keys()               # Register keyboard shortcuts
 
         # Binds
@@ -40,6 +41,11 @@ class App(tk.Tk):   # App inherits tk
         status_frame.pack(side="bottom", fill="x")                              # Dock to bottom; stretch horizontally
         self.status = tk.Label(status_frame, anchor="w")                        # Left-aligned text label for status 
         self.status.pack(side="left", fill="x", expand=True)                    # Let label expand to fill the frame  
+
+    def _on_close(self):
+        if not self._maybe_confirm_discard(): # If there are unsaved changes and user cancels, abort closing
+            return # Otherwise, close the window and end the app
+        self.destroy()
 
     def _update_status(self, even=None):
         index = self.text.index("insert")                                       # Current cursor index as "line.column" (e.g., "12.34")
