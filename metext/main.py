@@ -156,7 +156,7 @@ class App(tk.Tk):   # App inherits tk
             return
         
         self._find_win = tk.Toplevel(self)      # Create a child window
-        self._find_win.title("Fine/Replace")    # Window title
+        self._find_win.title("Find/Replace")    # Window title
         self._find_win.transient(self)          # Keep on top of main window
         self._find_win.resizable(False, False)  # Fixed size dialog
 
