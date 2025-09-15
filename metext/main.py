@@ -149,6 +149,30 @@ class App(tk.Tk):   # App inherits tk
         self._update_title()
         self._update_status()
 
+    def _open_find_dialog(self):
+        # If a Find window already exists, bring it to fron instead of creating another
+        if hasattr(self, "_find_win") and self._find_win and self._find_win.winfo_exists():
+            self._find_win.lift()   # Raise to top
+            return
+        
+        self._find_win = tk.Toplevel(self)      # Create a child window
+        self._find_win.title("Fine/Replace")    # Window title
+        self._find_win.transient(self)          # Keep on top of main window
+        self._find_win.resizable(False, False)  # Fixed size dialog
+
+        # "Find:" label and entry
+        tk.Label(self._find_win, text="Find:").grid(row=0, column=0, padx=6, pady=6, sticky="e")
+        self._find_var = tk.StringVar()         # Variable to hold the search pattern
+        entry_find = tk.Entry(self._find_win, textvariable=self._find_var, width=30)
+        entry_find.grid(row=0, column=1, padx=6, pady=6)
+        entry_find.focus_set()                  # Focus the find box so you can type immediately
+
+        # Buttons for find actions
+        tk.Button(self._find_win, text="Find Next", command=self._find_next).grid(row=0, column=2, padx=6, pady=6)
+        tk.Button(self._find_win, text="Close", command=self._find_win_destroy).grid(row=0, column=3, padx=6, pady=6)
+                  
+        entry.bind("<Return>", lambda e: self._find_next())
+
     def _bind_keys(self):
         self.bind("<Control-n>", lambda e: self._action_new())                  # Bind Ctrl+n "New"
         self.bind("<Control-o>", lambda e: self._action_open())                 # Bind Ctrl+o "Open"
