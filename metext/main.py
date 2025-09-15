@@ -169,9 +169,48 @@ class App(tk.Tk):   # App inherits tk
 
         # Buttons for find actions
         tk.Button(self._find_win, text="Find Next", command=self._find_next).grid(row=0, column=2, padx=6, pady=6)
-        tk.Button(self._find_win, text="Close", command=self._find_win_destroy).grid(row=0, column=3, padx=6, pady=6)
+        tk.Button(self._find_win, text="Close", command=self._find_win.destroy).grid(row=0, column=3, padx=6, pady=6)
+
+        # "Replace:" label and entry
+        tk.Label(self._find_win, text="Replace:").grid(row=1, column=0, padx=6, pady=6, sticky="e")
+        self._repl_var = tk.StringVar()         # Variable for replacement text
+        entry_repl = tk.Entry(self._find_win, textvariable=self._repl_var, width=30)
+        entry_repl.grid(row=1, column=1, padx=6, pady=6)
+
+        # Buttons for replace actions
+        tk.Button(self._find_win, text="Replace", command=self._replace_one).grid(row=1, column=2, padx=6, pady=6)
+        tk.Button(self._find_win, text="Replace All", command=self._replace_all).grid(row=1, column=3, padx=6, pady=6)
                   
-        entry.bind("<Return>", lambda e: self._find_next())
+        entry_find.bind("<Return>", lambda e: self._find_next())
+      
+    def _find_next(self):
+        # Get the search pattern; if dialog isn't open or field empty, do nothing
+        pattern = (self._find_var.get() if hasattr(self, "_find_var") else "").strip()
+        if not pattern:
+            return
+        
+        # Remove any previous highlight so we can show only the current match
+        self.text.tag_remove("find_highlight", "1.0", "end")
+
+        # Start searching just after the current cursor position to find the "next" match
+        start = self.text.index("insert +1c")
+        pos = self.text.search(pattern, start, stopindex="end", nocase=False)
+        
+        if not pos:
+           pos = self.text.search(pattern, "1.0", stopindex="end", nocase=False)
+           if not pos:
+                return
+        
+        # Compute the end index by advancing pattern length in characters
+        end = f"{pos}+{len(pattern)}c"
+
+        # Add a tag to gighlight the found text range and configure its appearance
+        self.text.tag_add("find_highlight", pos, end)
+        self.text.tag_config("find_highlight", background="#ffd54f") # Light yellow 
+
+        # Move the cursor to the end of the match and ensure it;s visible
+        self.text.mark_set("insert", end)
+        self.text.see("insert")
 
     def _bind_keys(self):
         self.bind("<Control-n>", lambda e: self._action_new())                  # Bind Ctrl+n "New"
