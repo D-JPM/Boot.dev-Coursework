@@ -217,7 +217,7 @@ class App(tk.Tk):   # App inherits tk
         self.bind("<Control-o>", lambda e: self._action_open())                 # Bind Ctrl+o "Open"
         self.bind("<Control-s>", lambda e: self._action_save())                 # Bind Ctrl+s "Save"
         self.bind("<Control-S>", lambda e: self._action_save_as())              # Bind Ctrl+S "Save As"
-        self.bind("<Control-f>", lambda e:self._open_find_dialog())             # Bind Ctrl+f "Find"      
+        self.bind("<Control-f>", lambda e: self._open_find_dialog())             # Bind Ctrl+f "Find"      
 
 
 if __name__ == "__main__":      # run only when executed directly, not when imported
