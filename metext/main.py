@@ -212,12 +212,67 @@ class App(tk.Tk):   # App inherits tk
         self.text.mark_set("insert", end)
         self.text.see("insert")
 
+    def _replace_one(self):
+        # Get values from dialog; if no pattern, nothing to do
+        pattern = (self._find_var.get() if hasattr(self, "_find_var") else "").strip()
+        repl = (self.reply_var.get() if hasattr(self, "_repl_var") else "")
+        if not pattern:
+            return
+        
+        # Check if there's highlighted match
+        ranges = self.text.tag_ranges("find_highlight") # Return [start, end] indices if present
+        if ranges:
+            start, end = ranges[0], ranges[1]
+            current = self.text.get(start, end)         # Text currently highligthed
+            if current == pattern:                      # Confirm it matches the search term
+                self.text.delete(start, end)            # Remove the match
+                self.text.insert(start, repl)           # insert replacement text
+                self.modified = True                    # mark buffer as changed
+                self.text.edit_modified(True)           # let Tk fire <<Modified>>
+
+        # After replacement, find the next occurence
+        self._find_next
+
+    def _replace_all(self):
+        # Get values; no pattern means nothing to replace
+        pattern = (self._find_var.get() if hasattr(self, "_find_var") else "").strip()
+        repl = (self._repl_var.get() if hasattr(self, "_repl_var") else "")
+        if not pattern:
+            return
+
+        # Clear previous highlights
+        self.text.tag_remove("find_highlight", "1.0", "end")
+
+        count = 0               # track how many replacements we make
+        pos = "1.0"             # start from the beginning of the document
+        while True:
+            # Search for the next occurrence starting at current position
+            idx = self.text.search(pattern, pos, stopindex="end", nocase=False)
+            if not idx:
+                break           # no more matches
+
+            end = f"{idx}+{len(pattern)}c"  # end position of the match
+            self.text.delete(idx, end)      # delete the match
+            self.text.insert(idx, repl)     # insert replacement
+            count += 1
+
+            # Move position to just after the inserted replacement to avoid infinite loops
+            pos = f"{idx}+{len(repl)}c"
+
+        # If any replacements happened, mark as modified so title/status update
+        if count:
+            self.modified = True
+            self.text.edit_modified(True)
+
+        # Optionally re-run find to highlight the next occurrence of the (original) pattern
+        self._find_next()
+
     def _bind_keys(self):
         self.bind("<Control-n>", lambda e: self._action_new())                  # Bind Ctrl+n "New"
         self.bind("<Control-o>", lambda e: self._action_open())                 # Bind Ctrl+o "Open"
         self.bind("<Control-s>", lambda e: self._action_save())                 # Bind Ctrl+s "Save"
         self.bind("<Control-S>", lambda e: self._action_save_as())              # Bind Ctrl+S "Save As"
-        self.bind("<Control-f>", lambda e: self._open_find_dialog())             # Bind Ctrl+f "Find"      
+        self.bind("<Control-f>", lambda e: self._open_find_dialog())            # Bind Ctrl+f "Find"      
 
 
 if __name__ == "__main__":      # run only when executed directly, not when imported
