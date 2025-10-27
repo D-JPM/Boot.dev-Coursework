@@ -8,6 +8,9 @@ def main():
 
     # Initialize pygame
     pygame.init()
+    clock = pygame.time.Clock()
+    dt = 0
+
 
     # Drawing GUI
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -17,8 +20,13 @@ def main():
     # Game Loop
     running = True
     while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
 
-
+        # Game state update
+        dt = clock.tick(60) / 1000.0
+        
         # Display updates
         pygame.display.flip()
 
